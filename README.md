@@ -1,19 +1,20 @@
 ## 📖 系统概述
 
-**Solana RFQ 系统** 是一个生产级询价（Request-for-Quote）引擎，专为**高价值 RWA（现实世界资产）与稳定币兑换**设计，确保**零滑点**与**绝对原子化结算**。
+**Solana RFQ 系统** 是一个基于 OKX DEX 规范的生产级询价引擎，专为**高价值 RWA 与稳定币兑换**设计，实现**零滑点**与**原子化结算**。
 
-本系统借鉴 OKX DEX 架构，直击机构投资者与做市商的核心痛点：
+### 核心优势
 
-- ❌ **AMM 滑点**：传统 AMM 池在大额订单（如百万美元级代币化股票交易）中价格冲击严重
-- ❌ **MEV 剥削**：夹子攻击和抢跑侵蚀交易利润
-- ❌ **交易失败**：网络拥堵导致昂贵的结算失败
-- ❌ **结算风险**：非原子化转账使交易对手方暴露于违约风险
+| 传统 AMM | Solana RFQ |
+|----------|------------|
+| 滑点高 | **零滑点** — 价格通过链下签名锁定 |
+| 易受 MEV 攻击 | **抗 MEV** — 无可操纵的 DEX 池 |
+| 结算风险 | **原子结算** — 两笔转账同时成功或回滚 |
 
-该 RFQ 引擎提供**报价锁定 → 原子结算**的工作流，彻底消除上述风险，是以下场景的理想基础设施：
+### 适用场景
 
 - **代币化股票**（如 Ondo 代币化股票）
 - **代币化国债**（如 BUIDL、OUSG）
-- **大额稳定币兑换**（USDC ↔ USDT 机构级资金流）
+- **大额稳定币兑换**（USDC ↔ USDT）
 
 ---
 
@@ -123,12 +124,33 @@ yarn install
 solana-test-validator --reset
 
 # 终端 2：部署程序
-anchor deploy
+anchor build && anchor deploy
 
-# 终端 3：运行端到端测试套件
-yarn test:rfq
-# 或
-ts-node tests/test_rfq_e2e.ts
+# 终端 3：启动后端 Aggregator 服务
+cd backend
+cargo run
+# 后端将在 http://127.0.0.1:8080 启动
+# Swagger UI: http://127.0.0.1:8080/swagger-ui
+
+# 终端 4：运行端到端测试套件
+npx ts-node tests/test_rfq_e2e.ts
+```
+
+### 环境变量配置
+
+项目使用 `.env` 文件配置 Maker 私钥，确保后端和测试脚本使用相同的私钥：
+
+```bash
+# .env 文件内容
+MAKER_PRIVATE_KEY=<Base58 encoded 64-byte keypair>
+AGGREGATOR_PORT=8080
+SOLANA_RPC_URL=http://127.0.0.1:8899
+AGGREGATOR_URL=http://127.0.0.1:8080
+```
+
+生成新的测试私钥：
+```bash
+node -e "const crypto = require('crypto'); const bs58 = require('bs58'); console.log(bs58.encode(crypto.randomBytes(64)));"
 ```
 
 ### 示例输出
@@ -208,10 +230,19 @@ solana-rfq/
 │           │   └── execute_trade.rs # 核心 RFQ 结算逻辑
 │           └── state/
 │               └── rfq_record.rs   # 不可变 RFQ 执行记录
+├── backend/                        # Rust 后端 Aggregator 服务
+│   └── src/
+│       ├── main.rs                 # 服务入口
+│       ├── api.rs                  # API 路由和处理器
+│       ├── models.rs               # 数据模型定义
+│       ├── maker.rs                # Mock Market Maker 实现
+│       └── error.rs                # 错误类型定义
 ├── tests/
-│   ├── test_rfq_e2e.ts            # 端到端测试套件
-│   └── README_RfqE2E.md           # 测试文档
+│   └── test_rfq_e2e.ts             # 端到端测试套件
+├── .env                            # 环境变量配置（包含私钥）
+├── .gitignore                      # Git 忽略配置
 ├── Anchor.toml                     # Anchor 配置
+├── Cargo.toml                      # Rust 工作区配置
 └── package.json                    # TypeScript 依赖
 ```
 

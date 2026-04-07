@@ -1,8 +1,18 @@
-.anchor
+# General
 .DS_Store
 target
 **/*.rs.bk
+
+# Node
 node_modules
-test-ledger
 .yarn
+
+# Solana/Anchor
+.anchor
+test-ledger
+
+# Surfpool
 .surfpool
+
+# Environment variables (contains private keys)
+.env
