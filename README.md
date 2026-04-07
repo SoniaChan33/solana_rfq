@@ -214,39 +214,7 @@ Step 3: Submit and Confirm On-Chain Settlement
 === RFQ E2E Test Suite Complete ===
 ```
 
----
 
-## 📂 项目结构
-
-```
-solana-rfq/
-├── programs/
-│   └── solana_rfq/
-│       └── src/
-│           ├── lib.rs              # 程序入口
-│           ├── constants.rs        # PDA 种子与常量
-│           ├── error.rs            # 自定义错误类型
-│           ├── instructions/
-│           │   └── execute_trade.rs # 核心 RFQ 结算逻辑
-│           └── state/
-│               └── rfq_record.rs   # 不可变 RFQ 执行记录
-├── backend/                        # Rust 后端 Aggregator 服务
-│   └── src/
-│       ├── main.rs                 # 服务入口
-│       ├── api.rs                  # API 路由和处理器
-│       ├── models.rs               # 数据模型定义
-│       ├── maker.rs                # Mock Market Maker 实现
-│       └── error.rs                # 错误类型定义
-├── tests/
-│   └── test_rfq_e2e.ts             # 端到端测试套件
-├── .env                            # 环境变量配置（包含私钥）
-├── .gitignore                      # Git 忽略配置
-├── Anchor.toml                     # Anchor 配置
-├── Cargo.toml                      # Rust 工作区配置
-└── package.json                    # TypeScript 依赖
-```
-
----
 
 ## 🔒 安全考量
 
@@ -256,4 +224,63 @@ solana-rfq/
 2. **不可变 RFQ 记录**：一旦执行，RFQ 记录无法修改
 3. **PDA 隔离**：Authority PDA 不能持有 lamports，避免通过租金豁免攻击
 4. **确定性执行**：所有约束在编译时尽可能评估
+
+---
+
+## 📦 交付物清单
+
+### 1. 代码
+
+| 组件 | 文件路径 | 说明 |
+|------|----------|------|
+| **链上程序** | `programs/solana_rfq/src/` | Solana 结算合约 |
+| 结算指令 | `programs/solana_rfq/src/instructions/execute_trade.rs` | 核心 RFQ 结算逻辑 |
+| 防重放记录 | `programs/solana_rfq/src/state/rfq_record.rs` | 不可变 RFQ 执行记录 |
+| **链下服务** | `backend/src/` | Rust Aggregator 服务 |
+| API 端点 | `backend/src/api.rs` | RFQ 请求和报价接口 |
+| 做市商 | `backend/src/maker.rs` | Mock Market Maker 实现 |
+| 数据模型 | `backend/src/models.rs` | 请求和报价数据结构 |
+
+### 2. 可运行 Demo
+
+| 脚本 | 文件路径 | 说明 |
+|------|----------|------|
+| **端到端测试** | `tests/test_rfq_e2e.ts` | 完整的 RFQ 流程演示 |
+| 运行命令 | `npx ts-node tests/test_rfq_e2e.ts` | 一键运行测试套件 |
+
+### 3. 说明文档 `README.md` 
+
+---
+
+## 📂 项目结构
+
+```
+solana-rfq/
+├── programs/                          # 链上程序
+│   └── solana_rfq/
+│       └── src/
+│           ├── lib.rs                 # 程序入口
+│           ├── constants.rs           # PDA 种子与常量
+│           ├── error.rs               # 自定义错误类型
+│           ├── instructions/
+│           │   ├── mod.rs
+│           │   └── execute_trade.rs   # 核心 RFQ 结算逻辑
+│           └── state/
+│               ├── mod.rs
+│               └── rfq_record.rs      # 不可变 RFQ 执行记录
+├── backend/                           # 链下 Aggregator 服务
+│   ├── Cargo.toml
+│   └── src/
+│       ├── main.rs                    # 服务入口
+│       ├── api.rs                     # API 路由和处理器
+│       ├── models.rs                  # 数据模型定义
+│       ├── maker.rs                   # Mock Market Maker 实现
+│       └── error.rs                   # 错误类型定义
+├── tests/
+│   └── test_rfq_e2e.ts                # 端到端测试套件
+├── migrations/
+│   └── deploy.ts                      # 部署脚本
+├── .env.example                       # 环境变量示例
+├── README.md                          # 项目说明文档
+=```
 
